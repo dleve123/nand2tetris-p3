@@ -5,8 +5,8 @@
 
 /**
  * Memory of 8 registers, each 16 bit-wide. Out holds the value
- * stored at the memory location specified by address. If load==1, then 
- * the in value is loaded into the memory location specified by address 
+ * stored at the memory location specified by address. If load==1, then
+ * the in value is loaded into the memory location specified by address
  * (the loaded value will be emitted to out from the next time step onward).
  */
 
@@ -15,5 +15,30 @@ CHIP RAM8 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+
+    // Determine which register to read and possible write to from address
+    DMux8Way(in=true, sel=address, a=r0, b=r1, c=r2, d=r3, e=r4, f=r5, g=r6, h=r7);
+
+    // Determine whether to write to the addressed register as well (if load bit is asserted)
+    And(a=r0, b=load, out=w0);
+    And(a=r1, b=load, out=w1);
+    And(a=r2, b=load, out=w2);
+    And(a=r3, b=load, out=w3);
+    And(a=r4, b=load, out=w4);
+    And(a=r5, b=load, out=w5);
+    And(a=r6, b=load, out=w6);
+    And(a=r7, b=load, out=w7);
+
+    // Possibly write to addressed register (and read from all of them)
+    Register(in=in, load=w0, out=out0);
+    Register(in=in, load=w1, out=out1);
+    Register(in=in, load=w2, out=out2);
+    Register(in=in, load=w3, out=out3);
+    Register(in=in, load=w4, out=out4);
+    Register(in=in, load=w5, out=out5);
+    Register(in=in, load=w6, out=out6);
+    Register(in=in, load=w7, out=out7);
+
+    // Output from gate the output of the addressed register.
+    Mux8Way16(a=out0, b=out1, c=out2, d=out3, e=out4, f=out5, g=out6, h=out7, sel=address, out=out);
 }
