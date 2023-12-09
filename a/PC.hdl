@@ -16,5 +16,22 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+
+    // Handle incrementing
+    Inc16(in=state, out=stateInc);
+    Mux16(a=state, b=stateInc, sel=inc, out=maybeInc);
+
+    // Handle setting via load bit
+    Mux16(a=maybeInc, b=in, sel=load, out=maybeSet);
+
+    // Handle resetting via reset bit
+    Mux16(a=true, b=false, sel=reset, out=resetBus);
+    And16(a=maybeSet, b=resetBus, out=maybeReset);
+
+    // only set load bit if there was some mutating only bit set.
+    // OTHERWISE, `in` could be set, mutating the Bit state incorrectly.
+    Or(a=reset, b=load, out=wasResetOrLoad);
+    Or(a=wasResetOrLoad, b=inc, out=wasChanged);
+
+    Register(in=maybeReset, load=wasChanged, out=out, out=state);
 }
